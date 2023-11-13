@@ -1,40 +1,79 @@
-import altair as alt
-import numpy as np
-import pandas as pd
 import streamlit as st
+import plotly.express as px
+import pandas as pd
+import os
+import warnings
+warnings.filterwarnings('ignore')
 
-"""
-# Welcome to Streamlit!
+st.set_page_config(page_title="CO2 Emission", page_icon=":bar_chart:", layout="wide")
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+st.title("IUST Junior Project")
+st.markdown("<style>div.block-container{padding-top:1rem;}</style>",unsafe_allow_html=True)
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
 
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
 
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+
+
+
+
+
+
+
+
+
+'''
+import pandas as pd
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import plotly.express as px
+
+# Load the data
+url = 'https://raw.githubusercontent.com/moufeedovich/co2_emissions/main/final_data.csv'
+df = pd.read_csv(url)
+
+# Initialize the Dash app
+app = dash.Dash(__name__)
+
+# Define the layout of the app
+app.layout = html.Div([
+    html.H1("CO2 Emissions Dashboard"),
+
+    # Dropdown for selecting country names
+    dcc.Dropdown(
+        id='country-dropdown',
+        options=[{'label': country, 'value': country} for country in df['country_name'].unique()],
+        value=df['country_name'].unique()[0],
+        multi=False,
+        style={'width': '50%'}
+    ),
+
+    # Scatter plot for CO2 emissions
+    dcc.Graph(id='scatter-plot'),
+
+])
+
+# Define callback to update scatter plot based on dropdown selection
+@app.callback(
+    Output('scatter-plot', 'figure'),
+    [Input('country-dropdown', 'value')]
+)
+def update_scatter_plot(selected_country):
+    # Filter the data based on the selected country
+    filtered_df = df[df['country_name'] == selected_country]
+
+    # Create a scatter plot
+    fig = px.scatter(filtered_df, x='year', y='co2', color='count',
+                     title=f'CO2 Emissions for {selected_country}',
+                     labels={'co2': 'CO2 Emissions', 'year': 'Year'},
+                     hover_data=['country_name'])
+
+    return fig
+
+# Run the app
+if __name__ == '__main__':
+    app.run_server(debug=True)
+'''
